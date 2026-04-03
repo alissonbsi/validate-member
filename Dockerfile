@@ -1,18 +1,24 @@
-# Imagem base leve
-FROM ubuntu:latest AS build
+# Stage 1: Build
+FROM maven:3.9.3-eclipse-temurin-21 AS build
 
-RUN apt-get update
-RUN apt-get install openjdk-21-jdk -y
+WORKDIR /app
 
-COPY . .
+# Copia pom.xml para cache
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
 
-RUN apt-get install maven -y
-RUN mvn clean install
+# Copia o código
+COPY src ./src
 
-FROM openjdk:21-jdk
+# Build do jar
+RUN mvn clean package -DskipTests
 
+# Stage 2: Runtime
+FROM eclipse-temurin:21-jdk-jammy AS runtime
+
+WORKDIR /app
 EXPOSE 8080
 
-COPY --from=build /target/validade-member-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=build /app/target/validade-member-0.0.1-SNAPSHOT.jar app.jar
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
