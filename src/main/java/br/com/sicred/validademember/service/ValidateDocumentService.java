@@ -29,6 +29,6 @@ public class ValidateDocumentService {
     private boolean isAble(String cpf) {
         Random random = new Random();
         int numero = random.nextInt(10);
-        return cpf.endsWith(String.valueOf(numero));
+        return cpf.endsWith(String.valueOf(numero)) || cpf.startsWith(String.valueOf(numero));
     }
 }
